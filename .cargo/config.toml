@@ -1,0 +1,2 @@
+[build]
+rustflags = ["--cfg=web_sys_unstable_apis", "--cfg=erase_components", "-Z", "threads=12"]

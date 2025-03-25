@@ -1,7 +1,10 @@
 use leptos::prelude::*;
+use leptos_animate::{AnimatedSwap, FadeAnimation, LayoutEntry, SizeTransition};
 use leptos_meta::{Stylesheet, Title, provide_meta_context};
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router::{StaticSegment, WildcardSegment};
+use leptos_use::{ThrottleOptions, use_throttle_fn_with_options};
+use std::time::Duration;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -13,7 +16,7 @@ pub fn App() -> impl IntoView {
         <Stylesheet id="leptos" href="/pkg/companion.css"/>
 
         // sets the document title
-        <Title text="test env"/>
+        <Title text="Companion"/>
 
         // content for this welcome page
         <Router>
@@ -27,11 +30,57 @@ pub fn App() -> impl IntoView {
     }
 }
 
+// const COMPLETE_ICON_SVG: &'static str = include_str!("../assets/process-completed.svg");
+
 /// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
+    let tmp_switch = RwSignal::new(false);
+
+    let throttle_fn = use_throttle_fn_with_options(
+        move || tmp_switch.update(|v| *v = !*v),
+        1000.0,
+        ThrottleOptions::default().trailing(false),
+    );
+
+    let cur_task_fn = move || {
+        if tmp_switch.get() {
+            LayoutEntry {
+                key: 1,
+                view_fn: Box::new(move || {
+                    view! {
+                        <div>"Other task with a very long name"<br/>"Over multiple lines!"</div>
+                    }
+                    .into_any()
+                }),
+            }
+        } else {
+            LayoutEntry {
+                key: 2,
+                view_fn: Box::new(move || {
+                    view! {
+                        <div>"Clean the kitchen"</div>
+                    }
+                    .into_any()
+                }),
+            }
+        }
+    };
+
+    let anim = FadeAnimation::new(Duration::from_millis(200), "ease-out");
+
     view! {
-        "Home page"
+        <div class="main-grid">
+            <div class="next-task-label">
+                "Next task:"
+            </div>
+            <div class="current-task" on:click=move |_| { throttle_fn(); }>
+                <SizeTransition>
+                    <AnimatedSwap contents=cur_task_fn enter_anim=anim.clone() leave_anim=anim />
+                </SizeTransition>
+                // <div class="complete-icon" inner_html=COMPLETE_ICON_SVG></div>
+            </div>
+        </div>
     }
 }
 

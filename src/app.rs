@@ -104,28 +104,26 @@ fn NotFound() -> impl IntoView {
 
 #[server]
 pub async fn get_current_task() -> Result<String, ServerFnError> {
-    use crate::app_data::CustomData;
-    use actix_web::web;
-    use leptos_actix::extract;
+    use crate::task_format::TaskList;
 
-    let c = extract::<web::Data<CustomData>>().await?;
-    let task = if c.task_id() {
-        "Do something with dragons"
-    } else {
-        "Clean the kitchen"
-    };
+    let file_path = std::env::var("TASKS_FILE").unwrap();
 
-    Ok(task.to_owned())
+    let task = TaskList::from(std::fs::read_to_string(&file_path).unwrap())
+        .active_task()
+        .unwrap_or_else(|| "-".to_owned());
+
+    Ok(task)
 }
 
 #[server]
 pub async fn mark_current_task_complete() -> Result<(), ServerFnError> {
-    use crate::app_data::CustomData;
-    use actix_web::web;
-    use leptos_actix::extract;
+    use crate::task_format::TaskList;
 
-    let c = extract::<web::Data<CustomData>>().await?;
-    c.advance();
+    let file_path = std::env::var("TASKS_FILE").unwrap();
+
+    let mut list = TaskList::from(std::fs::read_to_string(&file_path).unwrap());
+    list.advance();
+    std::fs::write(&file_path, list.to_string()).unwrap();
 
     Ok(())
 }

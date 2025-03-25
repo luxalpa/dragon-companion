@@ -1,5 +1,6 @@
 pub mod app;
 pub mod app_data;
+pub mod task_format;
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]

@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use leptos::task::spawn_local;
 use leptos_animate::{AnimatedSwap, FadeAnimation, LayoutEntry, SizeTransition};
 use leptos_meta::{Stylesheet, Title, provide_meta_context};
 use leptos_router::components::{Route, Router, Routes};
@@ -35,35 +36,38 @@ pub fn App() -> impl IntoView {
 /// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
-    let tmp_switch = RwSignal::new(false);
+    let cur_task = RwSignal::new("".to_owned());
+
+    let cur_task_res = LocalResource::new(move || async move { get_current_task().await.unwrap() });
 
     let throttle_fn = use_throttle_fn_with_options(
-        move || tmp_switch.update(|v| *v = !*v),
+        move || {
+            spawn_local(async move {
+                mark_current_task_complete().await.unwrap();
+                cur_task_res.refetch();
+            });
+        },
         1000.0,
         ThrottleOptions::default().trailing(false),
     );
 
+    Effect::new(move || {
+        let r = cur_task_res.get();
+        if let Some(r) = r {
+            cur_task.set(r.take())
+        }
+    });
+
     let cur_task_fn = move || {
-        if tmp_switch.get() {
-            LayoutEntry {
-                key: 1,
-                view_fn: Box::new(move || {
-                    view! {
-                        <div>"Other task with a very long name"<br/>"Over multiple lines!"</div>
-                    }
-                    .into_any()
-                }),
-            }
-        } else {
-            LayoutEntry {
-                key: 2,
-                view_fn: Box::new(move || {
-                    view! {
-                        <div>"Clean the kitchen"</div>
-                    }
-                    .into_any()
-                }),
-            }
+        // stuff
+        LayoutEntry {
+            key: cur_task.get(),
+            view_fn: Box::new(move || {
+                view! {
+                    <div>{cur_task}</div>
+                }
+                .into_any()
+            }),
         }
     };
 
@@ -87,16 +91,8 @@ fn HomePage() -> impl IntoView {
 /// 404 - Not Found
 #[component]
 fn NotFound() -> impl IntoView {
-    // set an HTTP status code 404
-    // this is feature gated because it can only be done during
-    // initial server-side rendering
-    // if you navigate to the 404 page subsequently, the status
-    // code will not be set because there is not a new HTTP request
-    // to the server
     #[cfg(feature = "ssr")]
     {
-        // this can be done inline because it's synchronous
-        // if it were async, we'd use a server function
         let resp = expect_context::<leptos_actix::ResponseOptions>();
         resp.set_status(actix_web::http::StatusCode::NOT_FOUND);
     }
@@ -104,4 +100,32 @@ fn NotFound() -> impl IntoView {
     view! {
         <h1>"Not Found"</h1>
     }
+}
+
+#[server]
+pub async fn get_current_task() -> Result<String, ServerFnError> {
+    use crate::app_data::CustomData;
+    use actix_web::web;
+    use leptos_actix::extract;
+
+    let c = extract::<web::Data<CustomData>>().await?;
+    let task = if c.task_id() {
+        "Do something with dragons"
+    } else {
+        "Clean the kitchen"
+    };
+
+    Ok(task.to_owned())
+}
+
+#[server]
+pub async fn mark_current_task_complete() -> Result<(), ServerFnError> {
+    use crate::app_data::CustomData;
+    use actix_web::web;
+    use leptos_actix::extract;
+
+    let c = extract::<web::Data<CustomData>>().await?;
+    c.advance();
+
+    Ok(())
 }

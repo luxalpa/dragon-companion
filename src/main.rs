@@ -1,3 +1,5 @@
+use companion::app_data::CustomData;
+
 #[cfg(feature = "ssr")]
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -47,6 +49,7 @@ async fn main() -> std::io::Result<()> {
                 }
             })
             .app_data(web::Data::new(leptos_options.to_owned()))
+            .app_data(web::Data::new(CustomData::new()))
         //.wrap(middleware::Compress::default())
     })
         .bind(&addr)?

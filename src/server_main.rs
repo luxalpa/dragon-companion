@@ -188,7 +188,7 @@ fn run_service(_arguments: Vec<OsString>) -> Result<(), windows_service::Error> 
             Root::builder()
                 .appender("logfile")
                 .appender("stderr")
-                .build(LevelFilter::Trace),
+                .build(level),
         )
         .unwrap();
 

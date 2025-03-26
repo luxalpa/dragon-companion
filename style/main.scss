@@ -54,6 +54,10 @@ main {
   cursor: pointer;
   transition: text-shadow 0.3s;
 
+  div {
+    max-width: 600px;
+  }
+
   .complete-icon {
     opacity: 0;
     transition: opacity 0.1s;

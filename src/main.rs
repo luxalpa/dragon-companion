@@ -1,4 +1,12 @@
-use companion::app_data::CustomData;
+use clap::Parser;
+use companion::app_data::CompanionConfig;
+
+#[derive(Parser, Debug)]
+#[command(version, about)]
+struct Args {
+    #[arg(short, long)]
+    tasks_file: String,
+}
 
 #[cfg(feature = "ssr")]
 #[actix_web::main]
@@ -16,6 +24,7 @@ async fn main() -> std::io::Result<()> {
     println!("listening on http://{}", &addr);
 
     let routes = generate_route_list(App);
+    let args = Args::parse();
 
     HttpServer::new(move || {
         let leptos_options = &conf.leptos_options;
@@ -49,7 +58,9 @@ async fn main() -> std::io::Result<()> {
                 }
             })
             .app_data(web::Data::new(leptos_options.to_owned()))
-            .app_data(web::Data::new(CustomData::new()))
+            .app_data(web::Data::new(CompanionConfig {
+                tasks_file: args.tasks_file.clone(),
+            }))
         //.wrap(middleware::Compress::default())
     })
         .bind(&addr)?

@@ -1,10 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Leptos Watch" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
-    <option name="command" value="leptos watch" />
+    <option name="command" value="leptos watch -- --tasks-file=C:\Users\Luxalpa\Documents\ObsidianNotes\Tasks.md" />
     <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-    <envs>
-      <env name="TASKS_FILE" value="C:\Users\Luxalpa\Documents\ObsidianNotes\Tasks.md" />
-    </envs>
+    <envs />
     <option name="emulateTerminal" value="true" />
     <option name="channel" value="DEFAULT" />
     <option name="requiredFeatures" value="false" />

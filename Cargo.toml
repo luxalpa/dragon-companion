@@ -18,6 +18,7 @@ leptos-use = { version = "0.15.7", features = ["use_throttle_fn"] }
 wasm-bindgen = "=0.2.100"
 leptos-animate = { path = "../leptos-animate" }
 regex = "1.11.1"
+clap = { version = "=4.5.31", features = ["derive"] } # Locked to this version because latest has some weird bug with a missing clap_derive crate.
 
 [features]
 csr = ["leptos/csr"]
@@ -55,9 +56,9 @@ style-file = "style/main.scss"
 # Optional. Env: LEPTOS_ASSETS_DIR.
 assets-dir = "assets"
 # The IP and port (ex: 127.0.0.1:3000) where the server serves the content. Use it in your server setup.
-site-addr = "127.0.0.1:3000"
+site-addr = "127.0.0.1:2000"
 # The port to use for automatic reload monitoring
-reload-port = 3001
+reload-port = 2001
 # [Optional] Command to use when running end2end tests. It will run in the end2end dir.
 #   [Windows] for non-WSL use "npx.cmd playwright test"
 #   This binary name can be checked in Powershell with Get-Command npx

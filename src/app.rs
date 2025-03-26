@@ -104,11 +104,14 @@ fn NotFound() -> impl IntoView {
 
 #[server]
 pub async fn get_current_task() -> Result<String, ServerFnError> {
+    use crate::app_data::CompanionConfig;
     use crate::task_format::TaskList;
+    use leptos_actix::extract;
 
-    let file_path = std::env::var("TASKS_FILE").unwrap();
+    let d = extract::<actix_web::web::Data<CompanionConfig>>().await?;
+    let file_path = &d.tasks_file;
 
-    let task = TaskList::from(std::fs::read_to_string(&file_path).unwrap())
+    let task = TaskList::from(std::fs::read_to_string(file_path).unwrap())
         .active_task()
         .unwrap_or_else(|| "-".to_owned());
 
@@ -117,13 +120,16 @@ pub async fn get_current_task() -> Result<String, ServerFnError> {
 
 #[server]
 pub async fn mark_current_task_complete() -> Result<(), ServerFnError> {
+    use crate::app_data::CompanionConfig;
     use crate::task_format::TaskList;
+    use leptos_actix::extract;
 
-    let file_path = std::env::var("TASKS_FILE").unwrap();
+    let d = extract::<actix_web::web::Data<CompanionConfig>>().await?;
+    let file_path = &d.tasks_file;
 
-    let mut list = TaskList::from(std::fs::read_to_string(&file_path).unwrap());
+    let mut list = TaskList::from(std::fs::read_to_string(file_path).unwrap());
     list.advance();
-    std::fs::write(&file_path, list.to_string()).unwrap();
+    std::fs::write(file_path, list.to_string()).unwrap();
 
     Ok(())
 }

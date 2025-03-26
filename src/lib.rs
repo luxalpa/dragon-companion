@@ -1,7 +1,12 @@
 pub mod app;
+
+#[cfg(feature = "ssr")]
 pub mod app_data;
+
 #[cfg(feature = "ssr")]
 pub mod server_main;
+
+#[cfg(feature = "ssr")]
 pub mod task_format;
 
 #[cfg(feature = "hydrate")]

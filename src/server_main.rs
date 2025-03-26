@@ -3,6 +3,13 @@ use actix_web::dev::Server;
 use actix_web::rt;
 use actix_web::rt::spawn;
 use clap::Parser;
+use log::LevelFilter;
+use log4rs::Config;
+use log4rs::append::console::{ConsoleAppender, Target};
+use log4rs::append::file::FileAppender;
+use log4rs::config::{Appender, Root};
+use log4rs::encode::pattern::PatternEncoder;
+use log4rs::filter::threshold::ThresholdFilter;
 use std::ffi::OsString;
 use std::net::SocketAddr;
 use std::str::FromStr;
@@ -18,7 +25,7 @@ pub fn server_main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     if !args.service {
-        rt::System::new().block_on(create_server(args.tasks_file, false)?)?;
+        rt::System::new().block_on(create_server(args.tasks_file.unwrap(), false)?)?;
     } else {
         service_dispatcher::start(SERVICE_NAME, ffi_service_main)?;
     }
@@ -29,13 +36,13 @@ pub fn server_main() -> anyhow::Result<()> {
 #[command(version, about)]
 struct Args {
     #[arg(short, long)]
-    tasks_file: String,
+    tasks_file: Option<String>,
 
     #[arg(short, long)]
     service: bool,
 }
 
-fn create_server(tasks_file: String, is_service: bool) -> std::io::Result<Server> {
+fn create_server(tasks_file: String, is_service: bool) -> anyhow::Result<Server> {
     use crate::app::App;
     use actix_files::Files;
     use actix_web::*;
@@ -43,11 +50,11 @@ fn create_server(tasks_file: String, is_service: bool) -> std::io::Result<Server
     use leptos_actix::{LeptosRoutes, generate_route_list};
     use leptos_meta::MetaTags;
 
-    let mut conf = get_configuration(None).unwrap();
+    let mut conf = get_configuration(None)?;
 
     if is_service {
-        conf.leptos_options.site_addr = SocketAddr::from_str("127.0.0.1:8765").unwrap();
-        conf.leptos_options.site_root = Arc::from(std::env::var("COMPANION_SITE_ROOT").unwrap());
+        conf.leptos_options.site_addr = SocketAddr::from_str("127.0.0.1:8765")?;
+        conf.leptos_options.site_root = Arc::from(std::env::var("COMPANION_SITE_ROOT")?);
     }
 
     let addr = conf.leptos_options.site_addr;
@@ -155,7 +162,49 @@ fn run_service(_arguments: Vec<OsString>) -> Result<(), windows_service::Error> 
     // Tell the system that the service is running now
     status_handle.set_service_status(next_status)?;
 
-    let _ = run_webserver(rx);
+    let level = LevelFilter::Info;
+    let file_path = "C:\\companion.log";
+
+    // Build a stderr logger.
+    let stderr = ConsoleAppender::builder().target(Target::Stderr).build();
+
+    // Logging to log file.
+    let logfile = FileAppender::builder()
+        // Pattern: https://docs.rs/log4rs/*/log4rs/encode/pattern/index.html
+        .encoder(Box::new(PatternEncoder::new("{l} - {m}\n")))
+        .build(file_path)
+        .unwrap();
+
+    // Log Trace level output to file where trace is the default level
+    // and the programmatically specified level to stderr.
+    let config = Config::builder()
+        .appender(Appender::builder().build("logfile", Box::new(logfile)))
+        .appender(
+            Appender::builder()
+                .filter(Box::new(ThresholdFilter::new(level)))
+                .build("stderr", Box::new(stderr)),
+        )
+        .build(
+            Root::builder()
+                .appender("logfile")
+                .appender("stderr")
+                .build(LevelFilter::Trace),
+        )
+        .unwrap();
+
+    log4rs::init_config(config).unwrap();
+
+    std::panic::set_hook(Box::new(|info| {
+        log::error!("{}", info);
+    }));
+
+    unsafe {
+        std::env::set_var("RUST_BACKTRACE", "1");
+    }
+
+    if let Err(e) = run_webserver(rx) {
+        log::error!("server error: {:?} {}", e, e.backtrace());
+    }
 
     status_handle.set_service_status(ServiceStatus {
         service_type: ServiceType::OWN_PROCESS,

@@ -17,7 +17,7 @@ pub fn App() -> impl IntoView {
         <Stylesheet id="leptos" href="/pkg/companion.css"/>
 
         // sets the document title
-        <Title text="Companion"/>
+        <Title text="Dragon Companion"/>
 
         // content for this welcome page
         <Router>
@@ -58,17 +58,14 @@ fn HomePage() -> impl IntoView {
         }
     });
 
-    let cur_task_fn = move || {
-        // stuff
-        LayoutEntry {
-            key: cur_task.get(),
-            view_fn: Box::new(move || {
-                view! {
-                    <div>{cur_task}</div>
-                }
-                .into_any()
-            }),
-        }
+    let cur_task_fn = move || LayoutEntry {
+        key: cur_task.get(),
+        view_fn: Box::new(move || {
+            view! {
+                <div>{cur_task}</div>
+            }
+            .into_any()
+        }),
     };
 
     let anim = FadeAnimation::new(Duration::from_millis(200), "ease-out");

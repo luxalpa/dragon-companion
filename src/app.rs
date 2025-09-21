@@ -54,7 +54,7 @@ fn HomePage() -> impl IntoView {
     Effect::new(move || {
         let r = cur_task_res.get();
         if let Some(r) = r {
-            cur_task.set(r.take())
+            cur_task.set(r)
         }
     });
 

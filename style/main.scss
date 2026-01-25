@@ -12,6 +12,19 @@
   src: url("/assets/font-roma/Roma_SemiBold.otf") format("opentype");
 }
 
+@mixin gradient-border {
+  position: absolute;
+  content: "";
+  inset: 0;
+  padding: 1px;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box,
+  linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: -1;
+}
+
 html {
   background-color: #333333;
   height: 100vh;
@@ -62,7 +75,7 @@ main {
   height: 100%;
   width: 1000px;
   display: grid;
-  gap: 10px;
+  gap: 30px;
   grid-template-rows: auto 1fr;
 }
 
@@ -78,14 +91,23 @@ main {
 .achievement-card {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   border-radius: var(--border-radius);
-  border: 1px solid #6c6c6c;
   padding: 10px;
+  position: relative;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
 
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
 
-  background-color: #444444;
+  background: radial-gradient(ellipse 200px 200px at 50% 10%, #353535 0%, #474747 100%);
+
   color: #e3e3e3;
+  z-index: 1;
+
+  &:before {
+    @include gradient-border;
+    border-radius: var(--border-radius);
+    background: radial-gradient(ellipse 100px 100px at 50% top, #737373 0%, #5e5e5e 100%);
+  }
 }

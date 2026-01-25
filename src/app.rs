@@ -1,11 +1,8 @@
+use crate::achievements::{Achievement, get_all_tasks};
 use leptos::prelude::*;
-use leptos::task::spawn_local;
-use leptos_animate::{AnimatedSwap, FadeAnimation, LayoutEntry, SizeTransition};
 use leptos_meta::{Stylesheet, Title, provide_meta_context};
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router::{StaticSegment, WildcardSegment};
-use leptos_use::{ThrottleOptions, use_throttle_fn_with_options};
-use std::time::Duration;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -31,62 +28,18 @@ pub fn App() -> impl IntoView {
     }
 }
 
-// const COMPLETE_ICON_SVG: &'static str = include_str!("../assets/process-completed.svg");
-
-/// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
-    let cur_task = RwSignal::new("".to_owned());
-
-    let cur_task_res = LocalResource::new(move || async move { get_current_task().await.unwrap() });
-
-    let throttle_fn = use_throttle_fn_with_options(
-        move || {
-            spawn_local(async move {
-                mark_current_task_complete().await.unwrap();
-                cur_task_res.refetch();
-            });
-        },
-        1000.0,
-        ThrottleOptions::default().trailing(false),
-    );
-
-    Effect::new(move || {
-        let r = cur_task_res.get();
-        if let Some(r) = r {
-            cur_task.set(r)
-        }
-    });
-
-    let cur_task_fn = move || LayoutEntry {
-        key: cur_task.get(),
-        view_fn: Box::new(move || {
-            view! {
-                <div>{cur_task}</div>
-            }
-            .into_any()
-        }),
-    };
-
-    let anim = FadeAnimation::new(Duration::from_millis(200), "ease-out");
-
     view! {
-        <div class="main-grid">
-            <img src="/assets/Baryonyx.webp" alt="Baryonyx" class="monster-image card" />
-            // <div class="next-task-label">
-            //     "Next task:"
-            // </div>
-            // <div class="current-task" on:click=move |_| { throttle_fn(); }>
-            //     <SizeTransition>
-            //         <AnimatedSwap contents=cur_task_fn enter_anim=anim.clone() leave_anim=anim />
-            //     </SizeTransition>
-            //     // <div class="complete-icon" inner_html=COMPLETE_ICON_SVG></div>
-            // </div>
+        <div class="main-content">
+            <div class="header">
+                <img src="/assets/Baryonyx.webp" alt="Baryonyx" class="monster-image card" />
+            </div>
+            <AchievementsListView />
         </div>
     }
 }
 
-/// 404 - Not Found
 #[component]
 fn NotFound() -> impl IntoView {
     #[cfg(feature = "ssr")]
@@ -100,34 +53,28 @@ fn NotFound() -> impl IntoView {
     }
 }
 
-#[server]
-pub async fn get_current_task() -> Result<String, ServerFnError> {
-    use crate::app_data::CompanionConfig;
-    use crate::task_format::TaskList;
-    use leptos_actix::extract;
+#[component]
+fn AchievementsListView() -> impl IntoView {
+    let achievements = Resource::new(|| (), |_| async { get_all_tasks().await.unwrap() });
 
-    let d = extract::<actix_web::web::Data<CompanionConfig>>().await?;
-    let file_path = &d.tasks_file;
+    let all_achievements = move || achievements.get().unwrap_or_default();
+    fn key_fn(achievement: &Achievement) -> uuid::Uuid {
+        achievement.id
+    }
 
-    let task = TaskList::from(std::fs::read_to_string(file_path).unwrap())
-        .active_task()
-        .unwrap_or_else(|| "-".to_owned());
+    fn children_fn(achievement: Achievement) -> impl IntoView {
+        view! {
+            <div class="achievement-card">
+                {achievement.name}
+            </div>
+        }
+    }
 
-    Ok(task)
-}
-
-#[server]
-pub async fn mark_current_task_complete() -> Result<(), ServerFnError> {
-    use crate::app_data::CompanionConfig;
-    use crate::task_format::TaskList;
-    use leptos_actix::extract;
-
-    let d = extract::<actix_web::web::Data<CompanionConfig>>().await?;
-    let file_path = &d.tasks_file;
-
-    let mut list = TaskList::from(std::fs::read_to_string(file_path).unwrap());
-    list.advance();
-    std::fs::write(file_path, list.to_string()).unwrap();
-
-    Ok(())
+    view! {
+        <Transition fallback=move || view! { <div>"Loading achievements..."</div> }>
+            <div class="achievements-list">
+                <For each=all_achievements key=key_fn children=children_fn />
+            </div>
+        </Transition>
+    }
 }

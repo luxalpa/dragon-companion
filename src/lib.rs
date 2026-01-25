@@ -6,8 +6,7 @@ pub mod app_data;
 #[cfg(feature = "ssr")]
 pub mod server_main;
 
-#[cfg(feature = "ssr")]
-pub mod task_format;
+pub mod achievements;
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]

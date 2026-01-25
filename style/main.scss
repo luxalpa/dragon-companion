@@ -1,5 +1,17 @@
 @import "normalize";
 
+@font-face {
+  font-family: Roma;
+  font-weight: normal;
+  src: url("/assets/font-roma/Roma.otf") format("opentype");
+}
+
+@font-face {
+  font-family: Roma;
+  font-weight: bold;
+  src: url("/assets/font-roma/Roma_SemiBold.otf") format("opentype");
+}
+
 html {
   background-color: #333333;
   height: 100vh;
@@ -11,16 +23,14 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  font-family: Roma, sans-serif;
+  --border-radius: 7px;
 }
 
 main {
   height: 100%;
   padding: 10px;
   align-content: center;
-}
-
-.next-task-label {
-  color: #ffc254;
 }
 
 @keyframes myAnimation {
@@ -34,58 +44,48 @@ main {
 
 .card {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  border: 2px solid #6c6c6c;
-  animation: myAnimation 2.5s infinite alternate;
-  animation-timing-function: ease-out
+  border-radius: var(--border-radius);
+  border: 1px solid #6c6c6c;
 }
 
 .monster-image {
-  width: 1000px;
+  margin-top: 20px;
+  width: 100%;
+  display: block;
+  //animation: myAnimation 2.5s infinite alternate;
+  //animation-timing-function: ease-out
 }
 
-.main-grid {
+.main-content {
   cursor: default;
   margin: 0 auto;
-  width: fit-content;
+  height: 100%;
+  width: 1000px;
   display: grid;
   gap: 10px;
-  grid-template-columns: auto auto;
-
-  font-size: 35px;
-  font-weight: bold;
-  color: white;
-  text-shadow: #000 3px 3px 10px;
+  grid-template-rows: auto 1fr;
 }
 
-.complete-icon {
-  display: inline-block;
+.achievements-list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-rows: 100px;
+  grid-template-columns: repeat(5, 1fr);
 
-  svg {
-    width: 50px;
-    vertical-align: middle;
-    margin-bottom: 8px;
-  }
+  gap: 10px;
 }
 
-.current-task {
-  cursor: pointer;
-  transition: text-shadow 0.3s;
+.achievement-card {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius);
+  border: 1px solid #6c6c6c;
+  padding: 10px;
 
-  div {
-    max-width: 600px;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 
-  .complete-icon {
-    opacity: 0;
-    transition: opacity 0.1s;
-  }
-
-  &:hover {
-    text-shadow: #ffffff 0 0 10px, #000 3px 3px 10px;
-
-    .complete-icon {
-      //opacity: 1;
-    }
-  }
+  background-color: #444444;
+  color: #e3e3e3;
 }

@@ -1,10 +1,7 @@
 @import "normalize";
 
 html {
-  background-image: url('/assets/background.jpg');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center center;
+  background-color: #333333;
   height: 100vh;
   margin: 0;
   padding: 0;
@@ -24,6 +21,27 @@ main {
 
 .next-task-label {
   color: #ffc254;
+}
+
+@keyframes myAnimation {
+  from {
+    border-color: red;
+  }
+  to {
+    border-color: yellow;
+  }
+}
+
+.card {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 2px solid #6c6c6c;
+  animation: myAnimation 2.5s infinite alternate;
+  animation-timing-function: ease-out
+}
+
+.monster-image {
+  width: 1000px;
 }
 
 .main-grid {

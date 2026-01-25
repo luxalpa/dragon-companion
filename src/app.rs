@@ -72,15 +72,16 @@ fn HomePage() -> impl IntoView {
 
     view! {
         <div class="main-grid">
-            <div class="next-task-label">
-                "Next task:"
-            </div>
-            <div class="current-task" on:click=move |_| { throttle_fn(); }>
-                <SizeTransition>
-                    <AnimatedSwap contents=cur_task_fn enter_anim=anim.clone() leave_anim=anim />
-                </SizeTransition>
-                // <div class="complete-icon" inner_html=COMPLETE_ICON_SVG></div>
-            </div>
+            <img src="/assets/Baryonyx.webp" alt="Baryonyx" class="monster-image card" />
+            // <div class="next-task-label">
+            //     "Next task:"
+            // </div>
+            // <div class="current-task" on:click=move |_| { throttle_fn(); }>
+            //     <SizeTransition>
+            //         <AnimatedSwap contents=cur_task_fn enter_anim=anim.clone() leave_anim=anim />
+            //     </SizeTransition>
+            //     // <div class="complete-icon" inner_html=COMPLETE_ICON_SVG></div>
+            // </div>
         </div>
     }
 }

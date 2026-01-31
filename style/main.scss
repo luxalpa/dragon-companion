@@ -33,17 +33,15 @@ html {
 }
 
 body {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
   font-family: Roma, sans-serif;
-  --border-radius: 7px;
+  --border-radius: 4px;
 }
 
 main {
-  height: 100%;
-  padding: 10px;
-  align-content: center;
+  padding: 20px;
 }
 
 @keyframes myAnimation {
@@ -62,7 +60,6 @@ main {
 }
 
 .monster-image {
-  margin-top: 20px;
   width: 100%;
   display: block;
   //animation: myAnimation 2.5s infinite alternate;
@@ -72,18 +69,20 @@ main {
 .main-content {
   cursor: default;
   margin: 0 auto;
-  height: 100%;
-  width: 1000px;
+  max-width: 1408px;
   display: grid;
-  gap: 30px;
+  gap: 20px;
   grid-template-rows: auto 1fr;
 }
 
 .achievements-list {
   display: grid;
-  grid-auto-flow: column;
+  grid-auto-flow: row;
   grid-auto-rows: 100px;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  //max-height: 400px;
+  //overflow: auto;
+  //mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 15px, rgba(0, 0, 0, 1) calc(100% - 15px), rgba(0, 0, 0, 0));
 
   gap: 10px;
 }
@@ -109,5 +108,24 @@ main {
     @include gradient-border;
     border-radius: var(--border-radius);
     background: radial-gradient(ellipse 100px 100px at 50% top, #737373 0%, #5e5e5e 100%);
+  }
+}
+
+.new-achievement-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #a3a3a3;
+  border: 1px dashed #a3a3a3;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 24px;
+
+  transition: all 0.15s ease-out;
+
+  &:hover {
+    border-color: #e3e3e3;
+    color: #e3e3e3;
   }
 }

@@ -31,13 +31,17 @@ impl Achievement {
 
 impl AchievementList {
     pub fn sample() -> Self {
-        AchievementList {
-            achievements: vec![
-                Achievement::new("Add Roma font"),
-                Achievement::new("Add basic achievements sample"),
-                Achievement::new("Implement CSS for achievements display"),
-            ],
-        }
+        let list = [
+            Achievement::new("Add Roma font"),
+            Achievement::new("Add basic achievements sample"),
+            Achievement::new("Implement CSS for achievements display"),
+        ]
+        .into_iter()
+        .cycle()
+        .take(100)
+        .collect::<Vec<_>>();
+
+        AchievementList { achievements: list }
     }
 }
 

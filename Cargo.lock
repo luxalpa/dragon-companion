@@ -617,6 +617,7 @@ dependencies = [
  "leptos_router",
  "log",
  "log4rs",
+ "reactive_stores",
  "regex",
  "serde",
  "serde_json",

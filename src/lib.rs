@@ -7,6 +7,7 @@ pub mod app_data;
 pub mod server_main;
 
 pub mod achievements;
+mod unclaimed_achievements;
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]

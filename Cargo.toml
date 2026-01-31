@@ -27,6 +27,7 @@ serde = "1.0.228"
 uuid = { version = "1.20.0", features = ["serde", "v4"] }
 serde_json = "1.0.149"
 chrono = { version = "0.4.43", features = ["serde"] }
+reactive_stores = "0.3.1"
 
 [features]
 csr = ["leptos/csr", "uuid/js"]

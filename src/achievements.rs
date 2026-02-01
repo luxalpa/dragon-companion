@@ -55,3 +55,11 @@ pub async fn update_achievement(achievement: Achievement) -> Result<(), ServerFn
     leptos::logging::log!("Updating achievement: {:?}", achievement);
     Ok(())
 }
+
+#[server]
+pub async fn delete_achievement(achievement_id: uuid::Uuid) -> Result<(), ServerFnError> {
+    // Here you would delete the achievement from your data store.
+    // For this example, we'll just log it.
+    leptos::logging::log!("Deleting achievement with ID: {:?}", achievement_id);
+    Ok(())
+}

@@ -2,6 +2,7 @@ use crate::app::{AppState, AppStateStoreFields};
 use leptos::prelude::*;
 use reactive_stores::Store;
 
+#[expect(dead_code)]
 pub fn open_unclaimed_achievements_dialog() {
     let state = expect_context::<Store<AppState>>();
     state.show_unclaimed_achievements_dialog().set(true);

@@ -1,15 +1,15 @@
 use crate::achievements::Achievement;
-use crate::requests::{RequestRunner, use_request};
+use crate::requests::{DataRequest, RequestRunner, use_request};
 use crate::update_achievement::{
     UpdateAchievementDialog, UpdateAchievementState, open_update_achievement_dialog,
 };
-use leptos::logging;
 use leptos::prelude::*;
 use leptos_meta::{Stylesheet, Title, provide_meta_context};
 use leptos_request_batcher::RequestBatcher;
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router::{StaticSegment, WildcardSegment};
-use reactive_stores::Store;
+use reactive_stores::{AtKeyed, Store};
+use uuid::Uuid;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -78,16 +78,16 @@ fn NotFound() -> impl IntoView {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 enum AchievementListEntry {
-    Achievement(Achievement),
+    Achievement(AtKeyed<Store<AppState>, AppState, Uuid, Vec<Achievement>>),
     CreateNew,
 }
 
 impl AchievementListEntry {
     fn key(&self) -> AchievementListKey {
         match self {
-            AchievementListEntry::Achievement(a) => AchievementListKey::Achievement(a.id),
+            AchievementListEntry::Achievement(a) => AchievementListKey::Achievement(a.read().id),
             AchievementListEntry::CreateNew => AchievementListKey::CreateNew,
         }
     }
@@ -103,14 +103,18 @@ enum AchievementListKey {
 fn AchievementsListView() -> impl IntoView {
     let state = expect_context::<Store<AppState>>();
 
-    use_request(move || vec![crate::requests::DataRequest::GetAchievements]);
+    use_request(move || {
+        state
+            .achievements()
+            .read_untracked()
+            .is_empty()
+            .then(|| DataRequest::GetAchievements)
+    });
 
     let all_achievements = move || {
-        let a = state.achievements().get();
-
-        logging::log!("Achievements: {:?}", a);
-
-        a.into_iter()
+        state
+            .achievements()
+            .into_iter()
             .map(|a| AchievementListEntry::Achievement(a))
             .chain(std::iter::once(AchievementListEntry::CreateNew))
             .collect::<Vec<_>>()
@@ -138,11 +142,22 @@ fn AchievementsListView() -> impl IntoView {
                     </div>
                 }
             }
-            AchievementListEntry::Achievement(a) => view! {
-                <div class="achievement-card">
-                    {a.name}
-                </div>
-            },
+            AchievementListEntry::Achievement(a) => {
+                let name = move || a.read().name.clone();
+
+                let on_click = {
+                    let a = a.clone();
+                    move |_| {
+                        open_update_achievement_dialog(a.get());
+                    }
+                };
+
+                view! {
+                    <div class="achievement-card" on:click=on_click>
+                        {name}
+                    </div>
+                }
+            }
         }
     }
 

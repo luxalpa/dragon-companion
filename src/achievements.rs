@@ -37,8 +37,6 @@ impl AchievementList {
             Achievement::new("Implement CSS for achievements display"),
         ]
         .into_iter()
-        .cycle()
-        .take(100)
         .collect::<Vec<_>>();
 
         AchievementList { achievements: list }
@@ -48,4 +46,12 @@ impl AchievementList {
 #[server]
 pub async fn get_all_tasks() -> Result<Vec<Achievement>, ServerFnError> {
     Ok(AchievementList::sample().achievements)
+}
+
+#[server]
+pub async fn update_achievement(achievement: Achievement) -> Result<(), ServerFnError> {
+    // Here you would update the achievement in your data store.
+    // For this example, we'll just log it.
+    leptos::logging::log!("Updating achievement: {:?}", achievement);
+    Ok(())
 }

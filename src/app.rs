@@ -1,7 +1,12 @@
-use crate::achievements::{Achievement, get_all_tasks};
-use crate::unclaimed_achievements::open_unclaimed_achievements_dialog;
+use crate::achievements::Achievement;
+use crate::requests::{RequestRunner, use_request};
+use crate::update_achievement::{
+    UpdateAchievementDialog, UpdateAchievementState, open_update_achievement_dialog,
+};
+use leptos::logging;
 use leptos::prelude::*;
 use leptos_meta::{Stylesheet, Title, provide_meta_context};
+use leptos_request_batcher::RequestBatcher;
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router::{StaticSegment, WildcardSegment};
 use reactive_stores::Store;
@@ -28,23 +33,35 @@ pub fn App() -> impl IntoView {
                 </Routes>
             </main>
         </Router>
+
+        <UpdateAchievementDialog />
     }
 }
 
-#[derive(Clone, Default, Store)]
+#[derive(Default, Store)]
 pub struct AppState {
     pub show_unclaimed_achievements_dialog: bool,
+    pub cur_update_achievement: Option<UpdateAchievementState>,
+
+    #[store(key: uuid::Uuid = |a| a.id)]
+    pub achievements: Vec<Achievement>,
 }
 
 #[component]
 fn HomePage() -> impl IntoView {
+    let runner = RequestRunner {
+        store: expect_context::<Store<AppState>>(),
+    };
+
     view! {
-        <div class="main-content">
-            <div class="header">
-                <img src="/assets/smaug-mizzet-2.png" alt="Dragon" class="monster-image card" />
+        <RequestBatcher runner>
+            <div class="main-content">
+                <div class="header">
+                    <img src="/assets/smaug-mizzet-2_upscayl_2x_high-fidelity-4x.png" alt="Dragon" class="monster-image card" />
+                </div>
+                <AchievementsListView />
             </div>
-            <AchievementsListView />
-        </div>
+        </RequestBatcher>
     }
 }
 
@@ -84,16 +101,18 @@ enum AchievementListKey {
 
 #[component]
 fn AchievementsListView() -> impl IntoView {
-    let achievements = Resource::new(|| (), |_| async { get_all_tasks().await.unwrap() });
+    let state = expect_context::<Store<AppState>>();
+
+    use_request(move || vec![crate::requests::DataRequest::GetAchievements]);
 
     let all_achievements = move || {
-        achievements
-            .get()
-            .unwrap_or_default()
-            .into_iter()
+        let a = state.achievements().get();
+
+        logging::log!("Achievements: {:?}", a);
+
+        a.into_iter()
             .map(|a| AchievementListEntry::Achievement(a))
             .chain(std::iter::once(AchievementListEntry::CreateNew))
-            // .rev()
             .collect::<Vec<_>>()
     };
     fn key_fn(achievement: &AchievementListEntry) -> AchievementListKey {
@@ -102,13 +121,23 @@ fn AchievementsListView() -> impl IntoView {
 
     fn children_fn(achievement: AchievementListEntry) -> impl IntoView {
         match achievement {
-            AchievementListEntry::CreateNew => view! {
-                <div class="new-achievement-card" on:click=move |_| {
-                    open_unclaimed_achievements_dialog();
-                }>
-                    "+"
-                </div>
-            },
+            AchievementListEntry::CreateNew => {
+                let on_click = move |_| {
+                    open_update_achievement_dialog(Achievement {
+                        id: uuid::Uuid::new_v4(),
+                        name: "".to_string(),
+                        state: crate::achievements::TaskState::Completed(
+                            chrono::Utc::now().naive_utc(),
+                        ),
+                    });
+                };
+
+                view! {
+                    <div class="new-achievement-card" on:click=on_click>
+                        "+"
+                    </div>
+                }
+            }
             AchievementListEntry::Achievement(a) => view! {
                 <div class="achievement-card">
                     {a.name}
@@ -118,10 +147,8 @@ fn AchievementsListView() -> impl IntoView {
     }
 
     view! {
-        <Transition fallback=move || view! { <div>"Loading achievements..."</div> }>
-            <div class="achievements-list">
-                <For each=all_achievements key=key_fn children=children_fn />
-            </div>
-        </Transition>
+        <div class="achievements-list">
+            <For each=all_achievements key=key_fn children=children_fn />
+        </div>
     }
 }

@@ -611,6 +611,7 @@ dependencies = [
  "console_error_panic_hook",
  "leptos",
  "leptos-animate",
+ "leptos-request-batcher",
  "leptos-use 0.16.3",
  "leptos_actix",
  "leptos_meta",
@@ -1576,6 +1577,14 @@ dependencies = [
  "serde-wasm-bindgen",
  "wasm-bindgen",
  "web-sys",
+]
+
+[[package]]
+name = "leptos-request-batcher"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "leptos",
 ]
 
 [[package]]
